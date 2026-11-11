@@ -4,6 +4,8 @@ import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')) as { version: string };
+
 /**
  * Erzeugt nach dem Build einen Service Worker (dist/sw.js), der alle Dateien
  * vorab in den Cache legt – die App funktioniert danach vollständig offline.
@@ -44,6 +46,7 @@ export default defineConfig({
   // Netlify (/) und in jedem anderen Unterverzeichnis.
   base: './',
   plugins: [offlineServiceWorker()],
+  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   build: {
     target: 'es2020',
     outDir: 'dist',

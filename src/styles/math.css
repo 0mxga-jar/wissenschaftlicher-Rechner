@@ -1,0 +1,262 @@
+/* ───────────── Natural Display ───────────── */
+.math {
+  display: inline-block;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  line-height: 1.25;
+  font-variant-ligatures: none;
+}
+.m-row {
+  display: inline-block;
+  white-space: nowrap;
+}
+.math > .m-row {
+  min-width: 2px;
+  min-height: 1.25em;
+}
+.m-tok {
+  display: inline-block;
+}
+.m-op {
+  padding: 0 0.14em;
+}
+.m-fn,
+.m-word {
+  font-family: var(--font-ui);
+  font-weight: 500;
+  padding-left: 0.06em;
+}
+.m-word {
+  padding: 0 0.3em;
+  opacity: 0.9;
+}
+.m-var {
+  font-style: italic;
+  padding: 0 0.03em;
+}
+.m-txt {
+  font-family: var(--font-ui);
+  white-space: pre;
+}
+.m-unit {
+  font-family: var(--font-ui);
+  font-size: 0.72em;
+  vertical-align: 0.32em;
+  padding: 0 0.1em;
+  opacity: 0.92;
+}
+.m-exp10 {
+  font-size: 0.7em;
+  vertical-align: -0.16em;
+}
+
+/* Brüche */
+.m-frac {
+  display: inline-block;
+  vertical-align: middle;
+  text-align: center;
+  margin: 0 0.12em;
+  position: relative;
+  top: -0.05em;
+}
+.m-fnum,
+.m-fden {
+  display: block;
+  padding: 0 0.14em;
+}
+.m-fnum {
+  padding-bottom: 0.04em;
+}
+.m-fden {
+  border-top: max(1px, 0.065em) solid currentColor;
+  padding-top: 0.04em;
+}
+.m-frac .m-frac,
+.m-sup .m-frac,
+.m-lim .m-frac {
+  font-size: 0.88em;
+}
+.m-mixed {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* Wurzeln */
+.m-sqrt {
+  display: inline-block;
+  position: relative;
+  padding-left: 0.62em;
+  margin: 0.08em 0.06em 0 0.04em;
+}
+.m-rad {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0.66em;
+  height: 100%;
+  overflow: visible;
+}
+.m-radicand {
+  display: inline-block;
+  border-top: max(1px, 0.065em) solid currentColor;
+  padding: 0.07em 0.14em 0 0.08em;
+}
+.m-root {
+  display: inline-block;
+  white-space: nowrap;
+}
+.m-rootidx {
+  display: inline-block;
+  font-size: 0.58em;
+  vertical-align: 0.95em;
+  margin-right: -0.5em;
+  margin-left: 0.1em;
+  position: relative;
+  z-index: 1;
+}
+
+/* Potenzen */
+.m-pw {
+  display: inline-flex;
+  align-items: flex-start;
+}
+.m-sup {
+  font-size: 0.68em;
+  margin-left: 0.04em;
+  margin-top: -0.12em;
+}
+.m-sub {
+  display: inline-block;
+  font-size: 0.66em;
+  vertical-align: -0.38em;
+}
+
+/* Betrag */
+.m-abs {
+  display: inline-block;
+  border-left: max(1px, 0.07em) solid currentColor;
+  border-right: max(1px, 0.07em) solid currentColor;
+  padding: 0 0.18em;
+  margin: 0 0.12em;
+}
+
+/* Integral, Summe, Produkt, Ableitung */
+.m-big {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin: 0 0.06em;
+}
+.m-bigcol {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 0.12em;
+}
+.m-lim {
+  font-size: 0.56em;
+  line-height: 1.15;
+}
+.m-bigsym {
+  font-family: var(--font-ui);
+  font-size: 1.45em;
+  line-height: 1;
+}
+.m-intsym {
+  font-size: 1.75em;
+  font-weight: 400;
+  transform: scaleX(0.85);
+}
+.m-dx {
+  margin-left: 0.22em;
+}
+.m-ddx {
+  font-size: 0.78em;
+  top: 0;
+}
+.m-at {
+  font-size: 0.56em;
+  align-self: flex-end;
+  border-left: max(1px, 0.1em) solid currentColor;
+  padding: 0.5em 0 0 0.3em;
+  margin-left: 0.2em;
+}
+
+/* leere Felder und Cursor */
+.m-empty {
+  display: inline-block;
+  min-width: 0.62em;
+  height: 0.98em;
+  vertical-align: -0.14em;
+  border: 1px dashed color-mix(in srgb, currentColor 60%, transparent);
+  border-radius: 3px;
+  background: color-mix(in srgb, currentColor 7%, transparent);
+}
+.m-nobase {
+  margin-right: 0.04em;
+}
+.m-cursor {
+  display: inline-block;
+  width: 0;
+  height: 1.12em;
+  vertical-align: -0.2em;
+  position: relative;
+  pointer-events: none;
+}
+.m-cursor::after {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--disp-accent);
+  animation: blink 1.06s steps(1) infinite;
+}
+.m-empty > .m-cursor {
+  height: 0.9em;
+  vertical-align: 0;
+  left: 50%;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Zahlengitter (Matrizen, Vektoren) */
+.gridv {
+  display: inline-flex;
+  position: relative;
+  padding: 0.15em 0.5em;
+  vertical-align: middle;
+}
+.gridv::before,
+.gridv::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0.35em;
+  border: max(1px, 0.07em) solid currentColor;
+}
+.gridv::before {
+  left: 0;
+  border-right: 0;
+  border-radius: 0.3em 0 0 0.3em;
+}
+.gridv::after {
+  right: 0;
+  border-left: 0;
+  border-radius: 0 0.3em 0.3em 0;
+}
+.gridv-body {
+  display: inline-grid;
+  gap: 0.25em 0.9em;
+  align-items: center;
+  justify-items: end;
+}
+.gridv-cell {
+  white-space: nowrap;
+}
