@@ -48,3 +48,29 @@ Kurzprotokoll der Entscheidungen, die beim Bau von **Rechenwerk** autonom getrof
 - Polynomgleichungen: rationale Nullstellen und quadratische Restfaktoren exakt (Wurzeln, komplexe
   Lösungen), sonst numerisch (Durand-Kerner mit Newton-Nachiteration). Mehrfache Lösungen werden nur
   einmal ausgegeben.
+
+## Bedienkonzept
+- **MENU und Einstellungen in der Kopfzeile**, Statusanzeigen (DEG/RAD/GRA, Zahlenformat, M, SHIFT/ALPHA)
+  im Display wie bei einem echten Rechner. Antippen von „DEG“ schaltet die Winkeleinheit direkt um.
+- **Tastenlayout** eigenständig: Steuerzeile (SHIFT, ALPHA, Cursor), vier Funktionszeilen, Ziffernblock
+  mit DEL/AC und Operatoren rechts. SHIFT = gelb, ALPHA = violett.
+- **Kontextleiste** über der Tastatur mit den Zusatzfunktionen des jeweiligen Modus (z. B. i und ∠,
+  MatA…MatD, and/or/xor, Summe/Mittel) – so bleibt die Tastatur in allen Modi gleich.
+- **Formular-Modi** (Matrizen-Editor, Statistik, Verteilungen, Gleichungen, Ungleichungen, Verhältnis,
+  Tabellenkalkulation): Felder werden angetippt, die Eingabe erscheint in einer Formelzeile und wird mit
+  „=“ übernommen (wie am Schulrechner). Dort sind die Funktionstasten standardmäßig eingeklappt
+  (Taste „f(x)“), damit auf dem Handy mehr Platz für Daten und Ergebnisse bleibt.
+- **STO/RCL** öffnen eine Variablenliste mit den aktuellen Werten statt einer blinden Tastenfolge.
+- **hyp** öffnet eine kleine Auswahl der sechs Hyperbelfunktionen.
+- In der **Tabellenkalkulation** springt „=“ nach unten, in allen anderen Formularen zum nächsten Feld.
+- **Querformat:** Display links, Tastatur (Funktions- und Ziffernblock nebeneinander) rechts.
+- Der Graph der Wertetabelle verwendet ein auf Farbfehlsichtigkeit geprüftes Farbpaar (Blau/Orange),
+  Legende, Ablesen per Fingertipp und die Wertetabelle als gleichwertige Tabellenansicht.
+
+## Lieferung
+- `dist/` und `release/rechenwerk-dist.zip` liegen **mit im Repository**, damit der fertige Build ohne
+  Entwicklungsumgebung heruntergeladen und z. B. per Drag & Drop bei Netlify veröffentlicht werden kann.
+- Der GitHub-Actions-Workflow testet und baut auf jedem Branch, veröffentlicht aber nur vom
+  Standard-Branch (oder bei manuellem Start) auf GitHub Pages.
+- Anzeige-Schrift: IBM Plex Mono, die Ziffer 0 jedoch ohne Punkt (Glyphe aus IBM Plex Sans mit
+  identischer Breite) – eine gepunktete Null wäre im Schulkontext missverständlich.

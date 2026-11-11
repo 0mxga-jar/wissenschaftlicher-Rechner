@@ -72,6 +72,7 @@ function fields(): FieldDef[] {
 
 function regrid(): void {
   form.setGrid(fields().map((f) => [f.k]));
+  form.focusFirstEmpty();
 }
 regrid();
 
@@ -249,7 +250,7 @@ function chips(): Chip[] {
       id: 'clear',
       run: () => {
         defaults();
-        form.cancel();
+        form.focusFirstEmpty();
       },
     },
   ];

@@ -237,6 +237,36 @@ function Setup(): VNode {
           </div>
         )}
       </div>
+      <details class="help" data-testid="help">
+        <summary>Kurzanleitung</summary>
+        <ul>
+          <li>
+            <b>SHIFT</b> und <b>ALPHA</b> wählen die Zweitbelegung, die klein über jeder Taste steht (gelb bzw. violett).
+          </li>
+          <li>
+            <b>MENU</b> wechselt zwischen den zwölf Modi. <b>KAT</b> zeigt alle Funktionen, SHIFT + KAT die Konstanten, ALPHA + KAT
+            die Einheitenumrechnung.
+          </li>
+          <li>
+            Mit <b>◀ ▶ ▲ ▼</b> bewegt sich der Cursor durch Brüche, Wurzeln und Exponenten; ▲ holt frühere Eingaben zurück. Antippen
+            setzt den Cursor direkt.
+          </li>
+          <li>
+            <b>S⇔D</b> schaltet das Ergebnis zwischen exakt (Bruch, Wurzel, π) und dezimal um, SHIFT + S⇔D auf gemischte Brüche.
+          </li>
+          <li>
+            <b>STO</b> speichert das Ergebnis in einer Variablen, <b>RCL</b> (SHIFT + STO) fügt eine Variable ein. Argumente werden
+            mit <b>;</b> getrennt (SHIFT + „)“).
+          </li>
+          <li>
+            <b>SOLVE</b> (SHIFT + CALC) löst Gleichungen wie x² = 2 – das Gleichheitszeichen liegt auf ALPHA + CALC.
+          </li>
+          <li>
+            In den Formular-Modi wird jede Zahl mit <b>=</b> bestätigt; die Taste <b>f(x)</b> über der Tastatur blendet die
+            Funktionstasten ein oder aus.
+          </li>
+        </ul>
+      </details>
       <p class="about">
         Rechenwerk {__APP_VERSION__} · wissenschaftlicher Schulrechner als Offline-App. Alle Berechnungen laufen auf diesem Gerät.
       </p>

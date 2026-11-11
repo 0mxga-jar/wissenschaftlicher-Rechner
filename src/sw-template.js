@@ -27,7 +27,9 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
   event.respondWith(
     caches.open(CACHE).then(async (cache) => {
-      const cached = await cache.match(req, { ignoreSearch: true });
+      // ignoreVary: Schriften werden im CORS-Modus (mit Origin-Header) angefragt; ohne diese Option
+      // würde ein „Vary: Origin“ des Servers den Treffer im Cache verhindern.
+      const cached = await cache.match(req, { ignoreSearch: true, ignoreVary: true });
       if (cached) return cached;
       try {
         const res = await fetch(req);
@@ -36,7 +38,7 @@ self.addEventListener('fetch', (event) => {
       } catch (err) {
         // Offline: Navigationsanfragen mit der App-Shell beantworten
         if (req.mode === 'navigate') {
-          const shell = (await cache.match('./index.html')) || (await cache.match('./'));
+          const shell = (await cache.match('./index.html', { ignoreVary: true })) || (await cache.match('./', { ignoreVary: true }));
           if (shell) return shell;
         }
         throw err;

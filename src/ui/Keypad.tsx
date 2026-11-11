@@ -162,16 +162,20 @@ function Key({ def, onPress, comma, bare }: KeyProps): VNode {
   const interval = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastPointer = useRef(0);
 
+  const btn = useRef<HTMLButtonElement>(null);
   const stop = () => {
     if (timer.current) clearTimeout(timer.current);
     if (interval.current) clearInterval(interval.current);
     timer.current = null;
     interval.current = null;
+    btn.current?.classList.remove('pressed');
   };
   const down = (ev: PointerEvent) => {
     if (ev.button !== undefined && ev.button > 0) return;
     ev.preventDefault();
     lastPointer.current = performance.now();
+    // sichtbare Rückmeldung unabhängig vom :active-Verhalten des Browsers
+    btn.current?.classList.add('pressed');
     haptic();
     onPress(def);
     if (def.repeat) {
@@ -200,6 +204,7 @@ function Key({ def, onPress, comma, bare }: KeyProps): VNode {
       )}
       <button
         type="button"
+        ref={btn}
         class={`key k-${def.cls}${active ? ' active' : ''}${dim ? ' dim' : ''}`}
         data-key={def.id}
         aria-label={def.main.aria}

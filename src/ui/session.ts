@@ -117,6 +117,8 @@ export class CalcSession {
   entries: Entry[] = [];
   /** Index des Verlaufseintrags, der gerade groß angezeigt wird (oder null beim Tippen). */
   current: number | null = null;
+  /** Position beim Blättern im Verlauf (auch für Einträge ohne gespeichertes Ergebnis). */
+  private pos: number | null = null;
   form: ResultForm = 'exact';
   view: ResultView = 'std';
   error: CalcError | null = null;
@@ -146,6 +148,7 @@ export class CalcSession {
     try {
       const v = this.opts.evaluate(this.src(), this.ed.root);
       this.push({ row: cloneRow(this.ed.root), value: v, error: null, note });
+      this.pos = null;
       this.form = forceDecimal ? 'decimal' : defaultForm();
       this.view = 'std';
       this.error = null;
@@ -183,6 +186,7 @@ export class CalcSession {
     const e = this.entries[i];
     if (!e) return;
     setRow(this.ed, e.row);
+    this.pos = i;
     if (!e.value) {
       // wiederhergestellter Eintrag ohne Ergebnis: zum Bearbeiten laden
       this.current = null;
@@ -198,6 +202,7 @@ export class CalcSession {
   clearAll(): void {
     this.entries = [];
     this.current = null;
+    this.pos = null;
     this.error = null;
     clear(this.ed);
   }
@@ -212,6 +217,7 @@ export class CalcSession {
       case 'ac':
         clear(this.ed);
         this.current = null;
+        this.pos = null;
         this.error = null;
         return true;
       case 'del':
@@ -262,16 +268,18 @@ export class CalcSession {
 
   private browse(dir: number): void {
     if (this.entries.length === 0) return;
-    if (this.current === null) {
+    const base = this.current ?? this.pos;
+    if (base === null) {
       if (dir < 0) this.loadEntry(this.entries.length - 1);
       return;
     }
-    const i = this.current + dir;
+    const i = base + dir;
     if (i < 0) return;
     if (i >= this.entries.length) {
       // unterhalb des letzten Eintrags: leere Eingabezeile
       clear(this.ed);
       this.current = null;
+      this.pos = null;
       this.error = null;
       return;
     }
@@ -279,6 +287,7 @@ export class CalcSession {
   }
 
   private input(action: string): boolean {
+    this.pos = null;
     if (this.error) this.resume();
     const s = this.shown;
     if (s) {

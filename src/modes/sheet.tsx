@@ -25,6 +25,7 @@ const rows: Record<string, MRow> = {};
 const toSrc = (row: MRow): string => serialize(row).replace(/([A-E]) (?=[1-9])/g, '$1');
 
 const form = new CellForm({
+  advance: 'down',
   commitRow: (key, row) => {
     if (!row) {
       delete rows[key];

@@ -269,5 +269,5 @@ export function resetAll(scope: 'settings' | 'memory' | 'all'): void {
 export function applyTheme(): void {
   document.documentElement.dataset.theme = app.settings.theme;
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', app.settings.theme === 'dark' ? '#0d1117' : '#eef1f5');
+  if (meta) meta.setAttribute('content', app.settings.theme === 'dark' ? '#0b0f14' : '#e9edf2');
 }

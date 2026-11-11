@@ -33,6 +33,8 @@ export interface FormOptions {
   commitRow?: (key: string, row: MRow | null) => void;
   /** Wird aufgerufen, wenn „=“ im letzten Feld gedrückt wird. */
   onDone?: () => void;
+  /** Richtung, in die „=“ weiterspringt (Standard: nach rechts, am Zeilenende in die nächste Zeile). */
+  advance?: 'right' | 'down';
 }
 
 export class CellForm {
@@ -123,6 +125,13 @@ export class CellForm {
     this.error = null;
   }
 
+  /** Erstes leeres Feld aktivieren (oder das erste Feld, wenn alle belegt sind). */
+  focusFirstEmpty(): void {
+    const all = this.grid.flat();
+    this.cancel();
+    this.active = all.find((k) => !this.cells.get(k)?.value && !this.cells.get(k)?.row) ?? all[0] ?? '';
+  }
+
   /** Vorhandenen Ausdruck des aktiven Feldes zum Bearbeiten laden. */
   startEdit(): void {
     const c = this.cell(this.active);
@@ -176,7 +185,8 @@ export class CellForm {
       case 'exe':
       case 'approx': {
         if (this.typing && !this.commit()) return true;
-        if (!this.move(0, 1)) this.opts.onDone?.();
+        const moved = this.opts.advance === 'down' ? this.move(1, 0) : this.move(0, 1);
+        if (!moved) this.opts.onDone?.();
         return true;
       }
       case 'del':

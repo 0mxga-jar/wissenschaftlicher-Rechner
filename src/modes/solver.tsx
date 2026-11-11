@@ -61,6 +61,8 @@ const polyForm = new CellForm();
 function eqGrid(): void {
   linForm.setGrid(Array.from({ length: linN }, (_, i) => Array.from({ length: linN + 1 }, (_, j) => `${i},${j}`)));
   polyForm.setGrid([Array.from({ length: deg + 1 }, (_, k) => `c${k}`)]);
+  linForm.focusFirstEmpty();
+  polyForm.focusFirstEmpty();
 }
 eqGrid();
 
@@ -231,7 +233,7 @@ function clearChip(f: CellForm): Chip {
     id: 'clear',
     run: () => {
       f.cells.clear();
-      f.cancel();
+      f.focusFirstEmpty();
     },
   };
 }
@@ -260,6 +262,7 @@ let iOp: IneqOp = '>';
 const ineqForm = new CellForm();
 function ineqGrid(): void {
   ineqForm.setGrid([Array.from({ length: iDeg + 1 }, (_, k) => `c${k}`)]);
+  ineqForm.focusFirstEmpty();
 }
 ineqGrid();
 
@@ -384,6 +387,7 @@ let ratioKind: RatioKind = 'cx';
 const ratioForm = new CellForm();
 function ratioGrid(): void {
   ratioForm.setGrid([['a', 'b', ratioKind === 'cx' ? 'c' : 'd']]);
+  ratioForm.focusFirstEmpty();
 }
 ratioGrid();
 

@@ -48,6 +48,7 @@
   --danger: #ff7b7b;
   --sheet: #131a23;
   --scrim: rgba(3, 6, 10, 0.66);
+  --statusbar: transparent;
 }
 
 :root[data-theme='light'] {
@@ -85,6 +86,7 @@
   --danger: #c62828;
   --sheet: #f4f6f9;
   --scrim: rgba(20, 30, 45, 0.45);
+  --statusbar: #1b2531;
 }
 
 /* ───────────── Grundlayout ───────────── */
@@ -97,6 +99,25 @@ html,
 body {
   height: 100%;
   margin: 0;
+}
+/* App-Verhalten auf dem Handy: kein Gummiband-Scrollen der Seite */
+html {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  overflow: hidden;
+}
+/* iOS (Standalone): Bereich hinter der Statusleiste dunkel halten, damit Uhr und Akku lesbar bleiben */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--statusbar);
+  z-index: 100;
+  pointer-events: none;
 }
 body {
   background: var(--bg);
@@ -445,7 +466,8 @@ p {
     inset 0 1px 0 var(--key-hi),
     0 0 0 var(--key-shadow);
 }
-:root[data-theme='light'] .key:active {
+:root[data-theme='light'] .key:active,
+:root[data-theme='light'] .key.pressed {
   filter: brightness(0.9);
 }
 .key.dim {
@@ -666,11 +688,15 @@ i {
   .chips [data-chip='fn-keys'] {
     display: none;
   }
-  .key {
+  .k-fn {
     font-size: 13.5px;
   }
   .k-num {
     font-size: 18px;
+  }
+  .k-num[data-key='ans'],
+  .k-num[data-key='exp'] {
+    font-size: 12.5px;
   }
   .k-op {
     font-size: 20px;
@@ -678,9 +704,20 @@ i {
   .k-eq {
     font-size: 22px;
   }
+  .k-ctl,
+  .k-del {
+    font-size: 11px;
+    letter-spacing: 0;
+  }
+  .k-mod-shift,
+  .k-mod-alpha {
+    font-size: 9.5px;
+    letter-spacing: 0.02em;
+  }
   .key-sec {
     flex-basis: 11px;
-    font-size: 8.5px;
+    font-size: 8px;
+    letter-spacing: -0.01em;
   }
   .kp-hidden {
     grid-template-columns: minmax(0, 1fr);
@@ -690,11 +727,17 @@ i {
 
 /* sehr niedrige Hochformat-Geräte */
 @media (orientation: portrait) and (max-height: 640px) {
-  .key {
+  .k-fn {
     font-size: 14px;
   }
   .k-num {
     font-size: 19px;
+  }
+  .k-op {
+    font-size: 21px;
+  }
+  .k-eq {
+    font-size: 23px;
   }
   .key-sec {
     flex-basis: 11px;

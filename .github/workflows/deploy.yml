@@ -1,0 +1,48 @@
+# Baut die App und veröffentlicht sie auf GitHub Pages.
+# Voraussetzung (einmalig): Repository → Settings → Pages → Source: „GitHub Actions“.
+name: Auf GitHub Pages veröffentlichen
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Testen und bauen
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Unit-Tests
+        run: npm test
+      - name: Build (relativer Basispfad, läuft unter /<repo>/)
+        run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: Veröffentlichen
+    needs: build
+    # Veröffentlicht wird nur vom Standard-Branch des Repositorys (oder bei manuellem Start).
+    if: github.event_name == 'workflow_dispatch' || github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

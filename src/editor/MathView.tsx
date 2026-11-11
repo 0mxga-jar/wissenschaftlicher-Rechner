@@ -1,5 +1,6 @@
 /** Natural Display: zeichnet eine Formelzeile (mit optionalem Cursor) als HTML. */
 import type { ComponentChildren, VNode } from 'preact';
+import { useEffect, useRef } from 'preact/hooks';
 import type { MNode, MRow, MTpl } from '../core/mathtree';
 import { tokenClass, tokenLabel } from './tokens';
 
@@ -18,17 +19,7 @@ interface Ctx {
   comma: boolean;
 }
 
-function scrollToCursor(el: HTMLElement | null): void {
-  if (el && typeof el.scrollIntoView === 'function') {
-    try {
-      el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-    } catch {
-      /* ältere Browser */
-    }
-  }
-}
-
-const Cursor = (): VNode => <span class="m-cursor" key="cursor" ref={scrollToCursor} />;
+const Cursor = (): VNode => <span class="m-cursor" key="cursor" />;
 
 function cursorIndex(prefix: number[], cursor: number[] | null): number {
   if (!cursor || cursor.length !== prefix.length + 1) return -1;
@@ -241,8 +232,19 @@ export function MathView({ row, cursor = null, comma = true, onPick, class: cls 
         }
       }
     : undefined;
+  // nach jedem Zeichnen den Cursor in den sichtbaren Bereich holen (lange Eingaben scrollen mit)
+  const rootRef = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (!cursor) return;
+    const el = rootRef.current?.querySelector('.m-cursor');
+    try {
+      el?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    } catch {
+      /* ältere Browser */
+    }
+  });
   return (
-    <span class={`math${cls ? ` ${cls}` : ''}`} onPointerDown={pick}>
+    <span class={`math${cls ? ` ${cls}` : ''}`} onPointerDown={pick} ref={rootRef}>
       {renderRow(row, [], { cursor, comma }, true)}
     </span>
   );
