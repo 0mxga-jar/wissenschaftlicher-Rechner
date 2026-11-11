@@ -54,7 +54,8 @@ function tokenize(src: string, base: Base): Tok[] {
       }
       const v = parseInt(digits, b);
       if (b === 10) {
-        if (v > MAX) throw new CalcError('OVERFLOW', 'Die Zahl passt nicht in 32 Bit.', j);
+        // 2147483648 ist nur direkt hinter einem Minuszeichen zulässig (−2147483648)
+        if (v > MAX + 1) throw new CalcError('OVERFLOW', 'Die Zahl passt nicht in 32 Bit.', j);
         toks.push({ k: 'num', v, pos: i });
       } else {
         if (v > 0xffffffff) throw new CalcError('OVERFLOW', 'Die Zahl passt nicht in 32 Bit.', j);
@@ -97,6 +98,7 @@ export function evalBaseN(src: string, base: Base, ans = 0): number {
     const t = peek();
     if (t.k === 'num') {
       i++;
+      if (t.v > MAX) throw new CalcError('OVERFLOW', 'Die Zahl passt nicht in 32 Bit.', t.pos);
       return t.v;
     }
     if (eat('Ans')) return ans;
@@ -118,7 +120,14 @@ export function evalBaseN(src: string, base: Base, ans = 0): number {
     return fail();
   }
   function unary(): number {
-    if (eat('-')) return check(-unary());
+    if (eat('-')) {
+      const t = peek();
+      if (t.k === 'num' && t.v === MAX + 1) {
+        i++;
+        return MIN;
+      }
+      return check(-unary());
+    }
     if (eat('+')) return unary();
     return primary();
   }

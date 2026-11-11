@@ -301,7 +301,8 @@ def('mixed', 'Gemischter Bruch', 3, 3, (args, ctx) => {
   const w = asReal(evaluate(args[0], ctx), 'Der gemischte Bruch');
   const a = asReal(evaluate(args[1], ctx), 'Der gemischte Bruch');
   const b = asReal(evaluate(args[2], ctx), 'Der gemischte Bruch');
-  return rAdd(w, rDiv(a, b));
+  // −1 2/3 bedeutet −(1 + 2/3)
+  return w.n < 0 ? rSub(w, rDiv(a, b)) : rAdd(w, rDiv(a, b));
 });
 def('nPr', 'nPr', 2, 2, (args, ctx) => rPerm(asReal(evaluate(args[0], ctx), 'nPr'), asReal(evaluate(args[1], ctx), 'nPr')));
 def('nCr', 'nCr', 2, 2, (args, ctx) => rComb(asReal(evaluate(args[0], ctx), 'nCr'), asReal(evaluate(args[1], ctx), 'nCr')));

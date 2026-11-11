@@ -99,7 +99,13 @@ function runSub(): void {
   if (!sub) return;
   const { form } = sub;
   if (form.typing && !form.commit()) return;
-  for (const v of sub.vars) app.vars[v] = form.value(v) ?? Real.ZERO;
+  for (const v of sub.vars) {
+    const old = app.vars[v];
+    const val = form.value(v) ?? Real.ZERO;
+    // eine komplexe Variable bleibt erhalten, solange hier kein neuer Wert eingegeben wurde
+    if (old && old.kind !== 'real' && val.isZero() && !form.cell(v).row) continue;
+    app.vars[v] = val;
+  }
   if (sub.kind === 'calc') {
     sub = null;
     calcSession.execute();

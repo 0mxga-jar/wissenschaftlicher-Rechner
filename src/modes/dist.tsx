@@ -6,9 +6,11 @@ import {
   normalInv,
   binomPmf,
   binomCdf,
+  binomSf,
   binomInv,
   poissonPmf,
   poissonCdf,
+  poissonSf,
   poissonInv,
   Real,
   decimalRow,
@@ -130,13 +132,12 @@ function compute(): Out[] | string | null {
         { id: 'sigma', label: 'Standardabw. σ', value: Math.sqrt(n * p * (1 - p)) },
       ];
       if (kind === 'pd') return [{ id: 'p', label: 'P(X = x)', value: binomPmf(x, n, p) }, ...extra];
-      const le = binomCdf(x, n, p);
-      const lt = binomCdf(x - 1, n, p);
+      // auch für nicht ganzzahliges x korrekt: X ≤ x ⇔ X ≤ ⌊x⌋, X < x ⇔ X ≤ ⌈x⌉ − 1
       return [
-        { id: 'p', label: 'P(X ≤ x)', value: le },
-        { id: 'ge', label: 'P(X ≥ x)', value: 1 - lt },
-        { id: 'lt', label: 'P(X < x)', value: lt },
-        { id: 'gt', label: 'P(X > x)', value: 1 - le },
+        { id: 'p', label: 'P(X ≤ x)', value: binomCdf(Math.floor(x), n, p) },
+        { id: 'ge', label: 'P(X ≥ x)', value: binomSf(Math.ceil(x), n, p) },
+        { id: 'lt', label: 'P(X < x)', value: binomCdf(Math.ceil(x) - 1, n, p) },
+        { id: 'gt', label: 'P(X > x)', value: binomSf(Math.floor(x) + 1, n, p) },
         ...extra,
       ];
     }
@@ -154,20 +155,19 @@ function compute(): Out[] | string | null {
     const x = g('p.x');
     if (x === null) return null;
     if (kind === 'pd') return [{ id: 'p', label: 'P(X = x)', value: poissonPmf(x, mu) }];
-    const le = poissonCdf(x, mu);
-    const lt = poissonCdf(x - 1, mu);
     return [
-      { id: 'p', label: 'P(X ≤ x)', value: le },
-      { id: 'ge', label: 'P(X ≥ x)', value: 1 - lt },
-      { id: 'lt', label: 'P(X < x)', value: lt },
-      { id: 'gt', label: 'P(X > x)', value: 1 - le },
+      { id: 'p', label: 'P(X ≤ x)', value: poissonCdf(Math.floor(x), mu) },
+      { id: 'ge', label: 'P(X ≥ x)', value: poissonSf(Math.ceil(x), mu) },
+      { id: 'lt', label: 'P(X < x)', value: poissonCdf(Math.ceil(x) - 1, mu) },
+      { id: 'gt', label: 'P(X > x)', value: poissonSf(Math.floor(x) + 1, mu) },
     ];
   } catch (e) {
     return toCalcError(e).message;
   }
 }
 
-const clean = (v: number): number => (Math.abs(v) < 1e-15 ? 0 : Number(v.toPrecision(13)));
+/** Rundungsrauschen in der 14. Stelle entfernen (kleine Wahrscheinlichkeiten bleiben erhalten). */
+const clean = (v: number): number => (v === 0 ? 0 : Number(v.toPrecision(13)));
 
 function View(): VNode {
   const res = compute();

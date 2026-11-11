@@ -169,7 +169,7 @@ export function haptic(ms = 8): void {
 
 const STORAGE_KEY = 'rechenwerk.v1';
 
-type EncReal = { n: number; ex?: Array<[string, string, string, number]> };
+export type EncReal = { n: number; ex?: Array<[string, string, string, number]> };
 type EncValue = { k: 'r'; v: EncReal } | { k: 'c'; re: EncReal; im: EncReal };
 
 export function encodeReal(r: Real): EncReal {

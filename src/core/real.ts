@@ -447,15 +447,36 @@ function sinCosFloat(x: number, unit: AngleUnit): [number, number] {
   }
 }
 
+/**
+ * Winkel als double, bei exakten Werten vorher exakt auf eine Umdrehung reduziert
+ * (sonst gingen bei sehr großen Winkeln die entscheidenden Stellen verloren).
+ */
+function reducedAngle(a: Real, unit: AngleUnit): number {
+  if (!a.ex || Math.abs(a.n) < 1e6) return a.n;
+  if (unit === 'RAD') {
+    if (a.ex.terms.length === 1 && a.ex.terms[0].p === 1 && a.ex.terms[0].r === 1n) {
+      const c = a.ex.terms[0].c;
+      const two = Rat.of(2);
+      const red = c.sub(two.mul(Rat.of(c.div(two).floor())));
+      return red.toNumber() * Math.PI;
+    }
+    return a.n;
+  }
+  if (!a.ex.isRational()) return a.n;
+  const full = Rat.of(unit === 'DEG' ? 360 : 400);
+  const q = a.ex.asRat();
+  return q.sub(full.mul(Rat.of(q.div(full).floor()))).toNumber();
+}
+
 export function rSin(a: Real, unit: AngleUnit): Real {
   const k = angleSteps(a, unit);
   if (k !== null) return Real.fromExact(sin15(k));
-  return fin(sinCosFloat(a.n, unit)[0]);
+  return fin(sinCosFloat(reducedAngle(a, unit), unit)[0]);
 }
 export function rCos(a: Real, unit: AngleUnit): Real {
   const k = angleSteps(a, unit);
   if (k !== null) return Real.fromExact(sin15(k + 6));
-  return fin(sinCosFloat(a.n, unit)[1]);
+  return fin(sinCosFloat(reducedAngle(a, unit), unit)[1]);
 }
 export function rTan(a: Real, unit: AngleUnit): Real {
   const k = angleSteps(a, unit);
@@ -465,7 +486,7 @@ export function rTan(a: Real, unit: AngleUnit): Real {
     const t = sin15(k).div(c);
     if (t) return Real.fromExact(t);
   }
-  const [s, c] = sinCosFloat(a.n, unit);
+  const [s, c] = sinCosFloat(reducedAngle(a, unit), unit);
   if (c === 0) throw new CalcError('DOMAIN', 'Der Tangens ist an dieser Stelle nicht definiert.');
   return fin(s / c);
 }

@@ -177,3 +177,58 @@ test('Hardware-Tastatur am PC', async ({ page }) => {
   await page.keyboard.press('Enter');
   await expectResult(page, '1/2');
 });
+
+test('STO und M+ setzen Ans; FACT bei zu großen Zahlen; ▲ überschreibt keine neue Eingabe', async ({ page }) => {
+  await type(page, '5=');
+  await type(page, '3+4');
+  await press(page, 'sto');
+  await page.locator('[data-var="A"]').click();
+  await expectResult(page, '7');
+  await type(page, '+1=');
+  await expectResult(page, '8');
+  // FACT: 2^50 ist zu groß – Hinweis statt Absturz
+  await press(page, 'ac', '2', 'pow', '5', '0', 'exe', 'shift', 'dms');
+  await expect(page.getByTestId('toast')).toContainText('zu groß');
+  await expectResult(page, '1,125899907×10¹⁵');
+  // neue Eingabe bleibt bei ▲ erhalten
+  await press(page, 'ac');
+  await type(page, '12+');
+  await press(page, 'up');
+  await type(page, '30=');
+  await expectResult(page, '42');
+  // 10^x direkt hinter einer Zahl
+  await press(page, 'ac', '5', 'shift', 'log', '2', 'exe');
+  await expectResult(page, '500');
+});
+
+test('gespeichertes Matrix-Ergebnis bleibt nach Neustart erhalten', async ({ page }) => {
+  await openMode(page, 'matrix');
+  await option(page, 'tab', 'A');
+  await fill(page, '1', '2', '3', '4');
+  await option(page, 'tab', 'calc');
+  await chip(page, 'MatA');
+  await press(page, 'sq', 'exe');
+  await chip(page, 'store-B');
+  await page.waitForTimeout(700);
+  await page.reload();
+  await option(page, 'tab', 'B');
+  await expect(page.locator('[data-cell="1,1"]')).toHaveAttribute('data-value', '22');
+  await option(page, 'tab', 'calc');
+  await chip(page, 'det');
+  await chip(page, 'MatB');
+  await press(page, 'exe');
+  await expectResult(page, '4');
+});
+
+test('Verteilungen: sehr kleine Wahrscheinlichkeiten werden nicht zu 0', async ({ page }) => {
+  await openMode(page, 'dist');
+  await option(page, 'dist', 'binom');
+  await option(page, 'kind', 'pd');
+  await fill(page, '0', '60', '0,5');
+  // die Hochzahl wird als echtes Superskript gezeichnet, der Text lautet daher „×10−19“
+  await expect(page.getByTestId('dist-p')).toContainText('8,67361738×10−19');
+  await option(page, 'kind', 'cd');
+  await cell(page, 'b.x');
+  await fill(page, '60');
+  await expect(page.getByTestId('dist-ge')).toContainText('8,67361738×10−19');
+});

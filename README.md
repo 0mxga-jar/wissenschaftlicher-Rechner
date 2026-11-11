@@ -114,7 +114,7 @@ Die App läuft dann unter <http://localhost:5173>. Weitere Befehle:
 | --- | --- |
 | `npm run build` | Typprüfung und Produktions-Build nach `dist/` (inkl. Service Worker) |
 | `npm run preview` | den Build lokal ausliefern (zum Testen der PWA, auch im WLAN vom Handy aus erreichbar) |
-| `npm test` | Unit-Tests des Rechenkerns (Vitest, über 300 Testfälle) |
+| `npm test` | Unit-Tests des Rechenkerns, des Editors und der Bedienlogik (Vitest, rund 390 Testfälle) |
 | `npm run test:e2e` | End-to-End-Tests (Playwright, Handy-Formate 375×812 und 412×915) |
 | `npm run zip` | `dist/` als `release/rechenwerk-dist.zip` verpacken |
 | `npm run icons` | App-Icons aus dem SVG neu erzeugen |
@@ -176,6 +176,11 @@ Ein Update wird automatisch im Hintergrund geladen und ist beim nächsten Start 
 
 - **Kein CAS:** Es wird numerisch bzw. mit exakten Brüchen, Wurzeln und π-Vielfachen gerechnet –
   keine symbolische Umformung, keine Variablen in Ergebnissen. Integrale und Ableitungen sind numerisch.
+- **Integrale:** Integranden mit einer Singularität an der Grenze 0 (z. B. 1/√x von 0 bis 1) werden
+  berechnet; liegt die Singularität an einer anderen Grenze oder im Inneren, oder divergiert das
+  Integral, gibt es eine Fehlermeldung statt eines unsicheren Werts.
+- **SOLVE** findet eine Lösung in der Nähe des Startwerts (Newton-Verfahren); bei mehreren Lösungen
+  entscheidet der Startwert, Polstellen werden nicht als Lösung ausgegeben.
 - **Exakte Ergebnisse** gibt es für Brüche, Quadratwurzeln und π-Vielfache (bis zu drei Summanden,
   Zahlen unter 10 Stellen); alles andere wird dezimal mit 10 signifikanten Stellen angezeigt.
   Intern wird mit 64-Bit-Gleitkommazahlen gerechnet (ca. 15–16 Stellen).

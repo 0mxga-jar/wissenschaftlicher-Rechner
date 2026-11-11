@@ -5,7 +5,7 @@
  * Alle Operationen liefern `null`, wenn das Ergebnis diese Form verlässt.
  */
 import { CalcError } from './errors';
-import { Rat, bgcd, isqrt } from './rat';
+import { Rat, bgcd, isqrt, ratioToNumber } from './rat';
 
 export interface Term {
   /** Koeffizient */
@@ -179,8 +179,26 @@ export class Exact {
     if (this.terms.length === 0) return 0;
     if (this.terms.length === 1) return termToNumber(this.terms[0]);
     let s = 0;
-    for (const t of this.terms) s += termToNumber(t);
+    let mag = 0;
+    for (const t of this.terms) {
+      const v = termToNumber(t);
+      s += v;
+      mag += Math.abs(v);
+    }
+    // Auslöschung (z. B. √(10²⁰+1) − 10¹⁰): mit 60 Dezimalstellen nachrechnen
+    if (Number.isFinite(mag) && Math.abs(s) < 1e-3 * mag) return this.toNumberPrecise();
     return s;
+  }
+
+  /** Wert mit 60 Dezimalstellen Festkomma-Genauigkeit berechnen und erst dann runden. */
+  private toNumberPrecise(): number {
+    let sum = 0n;
+    for (const t of this.terms) {
+      let v = t.c.n * (t.r === 1n ? HP_SCALE : isqrt(t.r * HP_SCALE * HP_SCALE));
+      if (t.p === 1) v = (v * HP_PI) / HP_SCALE;
+      sum += v / t.c.d;
+    }
+    return ratioToNumber(sum, HP_SCALE);
   }
 
   sign(): number {
@@ -282,6 +300,10 @@ export class Exact {
     return sqrtRat(this.asRat());
   }
 }
+
+const HP_SCALE = 10n ** 60n;
+/** π · 10⁶⁰ */
+const HP_PI = 3141592653589793238462643383279502884197169399375105820974944n;
 
 function termToNumber(t: Term): number {
   let x = t.c.toNumber();

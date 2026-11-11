@@ -22,7 +22,7 @@ const COLS = 'ABCDE';
 const rows: Record<string, MRow> = {};
 
 /** Quelltext einer Zelle: Spaltenbuchstabe und Zeilennummer gehören zusammen (A 1 → A1). */
-const toSrc = (row: MRow): string => serialize(row).replace(/([A-E]) (?=[1-9])/g, '$1');
+const toSrc = (row: MRow): string => serialize(row).replace(/(^|[^A-Za-z0-9$@_])([A-E]) (?=[1-9])/g, '$1$2');
 
 const form = new CellForm({
   advance: 'down',

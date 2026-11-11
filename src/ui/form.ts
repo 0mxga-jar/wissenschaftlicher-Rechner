@@ -15,7 +15,10 @@ import {
   type EditorState,
 } from '../editor/model';
 import { editorKey, isInputAction } from './session';
-import { makeContext } from './state';
+import { makeContext, encodeReal, decodeReal, type EncReal } from './state';
+
+/** Gespeicherter Feldinhalt: eingegebener Ausdruck oder (bei programmatisch gesetzten Feldern) der Wert. */
+export type FormSnapshot = Record<string, MRow | { v: EncReal }>;
 
 export interface Cell {
   /** eingegebener Ausdruck */
@@ -235,21 +238,23 @@ export class CellForm {
     this.opts.onChange?.(key);
   }
 
-  /** Gespeicherte Ausdrücke (für die Persistenz). */
-  snapshot(): Record<string, MRow> {
-    const out: Record<string, MRow> = {};
+  /** Feldinhalte für die Persistenz (Ausdruck, sonst Wert). */
+  snapshot(): FormSnapshot {
+    const out: FormSnapshot = {};
     this.cells.forEach((c, k) => {
       if (c.row) out[k] = c.row;
+      else if (c.value) out[k] = { v: encodeReal(c.value) };
     });
     return out;
   }
-  /** Ausdrücke laden und neu auswerten. */
-  restore(data: Record<string, MRow> | undefined): void {
+  /** Gespeicherte Inhalte laden; Ausdrücke werden neu ausgewertet. */
+  restore(data: FormSnapshot | undefined): void {
     this.cells.clear();
     if (!data) return;
-    for (const [k, row] of Object.entries(data)) {
+    for (const [k, entry] of Object.entries(data)) {
       try {
-        this.set(k, this.evaluate(serialize(row)), row);
+        if (Array.isArray(entry)) this.set(k, this.evaluate(serialize(entry)), entry);
+        else if (entry && typeof entry === 'object' && 'v' in entry) this.set(k, decodeReal(entry.v));
       } catch {
         /* fehlerhafte Einträge überspringen */
       }

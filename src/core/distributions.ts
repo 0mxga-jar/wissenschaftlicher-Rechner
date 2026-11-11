@@ -154,10 +154,26 @@ export function binomCdf(k: number, n: number, p: number): number {
   return Math.min(1, s);
 }
 
+/** P(X ≥ k) für X ~ B(n; p) – über die Gegenverteilung, damit kleine Werte genau bleiben. */
+export function binomSf(k: number, n: number, p: number): number {
+  checkBinom(n, p);
+  k = Math.ceil(k);
+  if (k <= 0) return 1;
+  if (k > n) return 0;
+  // P(X ≥ k) = P(n − X ≤ n − k) mit n − X ~ B(n; 1 − p)
+  return binomCdf(n - k, n, 1 - p);
+}
+
 /** Kleinstes k mit P(X ≤ k) ≥ area. */
 export function binomInv(area: number, n: number, p: number): number {
   checkBinom(n, p);
   need(area >= 0 && area <= 1, 'Die Fläche (Wahrscheinlichkeit) muss zwischen 0 und 1 liegen.');
+  if (area >= 1) {
+    // erst das größte k mit positiver Wahrscheinlichkeit erreicht die Fläche 1
+    let k = n;
+    while (k > 0 && binomRaw(k, n, p) === 0) k--;
+    return k;
+  }
   let s = 0;
   for (let k = 0; k <= n; k++) {
     s += binomRaw(k, n, p);
@@ -194,6 +210,23 @@ export function poissonCdf(k: number, mu: number): number {
   need(k <= 1e6, 'Der Wert x ist zu groß.');
   let s = 0;
   for (let i = 0; i <= k; i++) s += poissonRaw(i, mu);
+  return Math.min(1, s);
+}
+
+/** P(X ≥ k) für X ~ Po(μ) – direkt aufsummiert, damit kleine Werte genau bleiben. */
+export function poissonSf(k: number, mu: number): number {
+  need(mu >= 0, 'Der Erwartungswert μ darf nicht negativ sein.');
+  k = Math.ceil(k);
+  if (k <= 0) return 1;
+  if (mu === 0) return 0;
+  // unterhalb des Erwartungswerts ist die Gegenwahrscheinlichkeit genauer
+  if (k <= mu) return 1 - poissonCdf(k - 1, mu);
+  let s = 0;
+  for (let i = k; i < k + 100000; i++) {
+    const t = poissonRaw(i, mu);
+    s += t;
+    if (t <= s * 1e-17) break;
+  }
   return Math.min(1, s);
 }
 

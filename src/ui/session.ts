@@ -7,6 +7,7 @@ import {
   toks,
   hasExactForm,
   hasMixedForm,
+  primeFactors,
   type MRow,
   type TplKind,
   type ResultForm,
@@ -25,6 +26,7 @@ import {
   clear,
   isEmpty,
   setRow,
+  rowAt,
   setCursor,
   serialize,
   serializeMarked,
@@ -60,11 +62,16 @@ export function editorKey(ed: EditorState, action: string): boolean {
     case 'cbrt':
       insertTemplate(ed, 'root', [toks('3')]);
       return true;
-    case 'pow10':
+    case 'pow10': {
+      // direkt hinter einer Zahl: 5 · 10^□ statt der Ziffernfolge „510“
+      const row = rowAt(ed.root, ed.cur);
+      const prev = row[ed.cur[ed.cur.length - 1] - 1];
+      if (prev && prev.t === 'tok' && /^[0-9.]$/.test(prev.id)) insertToken(ed, '×');
       insertToken(ed, '1');
       insertToken(ed, '0');
       insertTemplate(ed, 'pow');
       return true;
+    }
     case 'epow':
       insertToken(ed, 'e');
       insertTemplate(ed, 'pow');
@@ -179,9 +186,12 @@ export class CalcSession {
   /** Eintrag mit bereits berechnetem Wert in den Verlauf schreiben (STO, M+ …). */
   record(value: Value, note: string): void {
     this.push({ row: cloneRow(this.ed.root), value, error: null, note });
+    this.pos = null;
     this.form = defaultForm();
     this.view = 'std';
     this.error = null;
+    // der angezeigte Wert ist das neue „letzte Ergebnis“ (Ans)
+    this.opts.onResult?.(value);
   }
 
   /** Zurück in den Bearbeitungszustand (Ausdruck bleibt stehen). */
@@ -248,6 +258,8 @@ export class CalcSession {
         if (this.editing && !isEmpty(this.ed)) {
           const moved = action === 'up' ? moveUp(this.ed) : moveDown(this.ed);
           if (moved) return true;
+          // eine neu getippte Eingabe wird nicht durch den Verlauf überschrieben (erst AC drücken)
+          if (this.pos === null) return true;
         }
         this.browse(action === 'up' ? -1 : 1);
         return true;
@@ -269,7 +281,15 @@ export class CalcSession {
       case 'fact': {
         const s = this.shown;
         if (s && s.value && s.value.kind === 'real' && s.value.isInt() && s.value.n >= 1) {
-          this.view = this.view === 'fact' ? 'std' : 'fact';
+          if (this.view === 'fact') this.view = 'std';
+          else {
+            try {
+              primeFactors(s.value); // prüft u. a. die Größe der Zahl
+              this.view = 'fact';
+            } catch (e) {
+              toast(toCalcError(e).detail);
+            }
+          }
         } else toast('FACT: erst eine natürliche Zahl berechnen (z. B. 360 =).');
         return true;
       }

@@ -17,8 +17,8 @@ import {
   type TableRow,
 } from '../core';
 import { serialize } from '../editor/model';
-import { app, makeContext, numFormat, defaultForm, registerPersister } from '../ui/state';
-import { CellForm } from '../ui/form';
+import { app, makeContext, numFormat, defaultForm, registerPersister, decodeReal } from '../ui/state';
+import { CellForm, type FormSnapshot } from '../ui/form';
 import { CellBtn, FormulaBar, Segmented, ErrorBox, Row } from '../ui/components';
 import type { Chip, ModeDef } from './types';
 
@@ -279,8 +279,9 @@ function Graph(): VNode {
   const yt = niceTicks(lo, hi, 4);
   const tickFmt = { mode: 'norm1' as const, digits: 0, comma: app.settings.comma };
   const label = (v: number): string => formatNumber(Number(v.toPrecision(6)), tickFmt);
-  const count = Math.floor((b - a) / Math.abs(step.n) + 1e-9) + 1;
-  const dots: number[] = count <= 41 ? Array.from({ length: count }, (_, k) => a + k * Math.abs(step.n)) : [];
+  // dieselben Stellen wie in der Wertetabelle (auch bei negativer Schrittweite)
+  const count = Math.floor((end.n - start.n) / step.n + 1e-9) + 1;
+  const dots: number[] = count >= 1 && count <= 41 ? Array.from({ length: count }, (_, k) => start.n + k * step.n) : [];
   const dotY = (s: Series, x: number): number => s.ys[Math.round(((x - a) / (b - a)) * SAMPLES)];
 
   const hi_i = hover === null ? null : Math.max(0, Math.min(SAMPLES, Math.round(((hover - a) / (b - a)) * SAMPLES)));
@@ -425,12 +426,13 @@ function chips(): Chip[] {
 registerPersister('table', {
   save: () => ({ cells: form.snapshot() }),
   load: (d) => {
-    const s = d as { cells?: Record<string, MRow> };
+    const s = d as { cells?: FormSnapshot };
     defaults();
-    for (const [k, row] of Object.entries(s.cells ?? {})) {
+    for (const [k, entry] of Object.entries(s.cells ?? {})) {
       try {
         form.active = k;
-        form.opts.commitRow!(k, row);
+        if (Array.isArray(entry)) form.opts.commitRow!(k, entry);
+        else if (k !== 'f' && k !== 'g') form.set(k, decodeReal(entry.v));
       } catch {
         /* fehlerhafte Einträge überspringen */
       }

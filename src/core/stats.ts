@@ -265,9 +265,14 @@ function solve3(m: number[][], v: number[]): number[] {
 /** Regressionsrechnung für Wertepaare. */
 export function regression(type: RegType, xs: number[], ys: number[], freqs?: number[]): Regression {
   if (xs.length !== ys.length) throw new CalcError('DIM', 'x und y müssen gleich viele Werte enthalten.');
-  const f = checkData(xs, freqs);
+  const all = checkData(xs, freqs);
+  // Zeilen mit Häufigkeit 0 zählen nicht (auch nicht für den Definitionsbereich)
+  const keep = all.map((w) => w > 0);
+  xs = xs.filter((_, i) => keep[i]);
+  ys = ys.filter((_, i) => keep[i]);
+  const f = all.filter((w) => w > 0);
   const need = type === 'quadratic' ? 3 : 2;
-  if (xs.filter((_, i) => f[i] > 0).length < need) {
+  if (xs.length < need) {
     throw new CalcError('ARG', `Für diese Regression werden mindestens ${need} Wertepaare benötigt.`);
   }
   const lnAll = (v: number[], what: string): number[] =>

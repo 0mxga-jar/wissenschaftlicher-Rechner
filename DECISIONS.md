@@ -74,3 +74,25 @@ Kurzprotokoll der Entscheidungen, die beim Bau von **Rechenwerk** autonom getrof
   Standard-Branch (oder bei manuellem Start) auf GitHub Pages.
 - Anzeige-Schrift: IBM Plex Mono, die Ziffer 0 jedoch ohne Punkt (Glyphe aus IBM Plex Sans mit
   identischer Breite) – eine gepunktete Null wäre im Schulkontext missverständlich.
+
+## Qualitätssicherung
+- Rund 390 Unit-Tests (Vitest) für Rechenkern, Editor und Bedienlogik; 134 End-to-End-Tests
+  (Playwright) auf 375×812 und 412×915 inklusive Layout-Prüfung, Querformat, kleinem Display und
+  Offline-Betrieb.
+- Vor dem Abschluss lief eine **unabhängige Code-Durchsicht** mit ausgeführten Stichproben
+  (Fuzzing gegen Referenzwerte). Ihre zwölf bestätigten Befunde sind behoben und als Regressionstests
+  in `tests/unit/review.test.ts` festgehalten, unter anderem:
+  - Polynomlöser: mehrfache Nullstellen (quadratfreier Teil über den ggT mit der Ableitung, numerisch
+    über die (k−1)-te Ableitung) und stark unterschiedliche Größenordnungen der Koeffizienten.
+  - Numerische Ableitung: mehrere Schrittweiten, Auswahl nach Fehlerschätzung inkl. Rundungsrauschen
+    (richtig auch nahe Polstellen, an Knicken und bei großem |x|).
+  - SOLVE: Steigung mit anpassender Schrittweite, Schrittweitenhalbierung, Lösung wird nur
+    akzeptiert, wenn der nächste Newton-Schritt verschwindet (keine Scheinlösungen an Polstellen).
+  - Integration: Ergebnis 0 ohne Rundungsrauschen, Tanh-Sinh-Quadratur für Randsingularitäten,
+    divergente Integrale werden gemeldet.
+  - Exakte Wurzelausdrücke werden bei Auslöschung mit 60 Stellen nachgerechnet
+    (z. B. √(10¹⁴+1) − 10⁷).
+  - STO und M+ setzen Ans; per Schaltfläche gefüllte Matrizen/Vektoren werden mitgespeichert.
+- Die physikalischen Konstanten konnten in der Arbeitsumgebung nicht online gegen die NIST-Tabelle
+  geprüft werden (kein Netzzugriff auf physics.nist.gov). Stattdessen prüfen 31 Tests ihre gegenseitige
+  Konsistenz (z. B. ħ = h/2π, α = e²/(4πε₀ħc), σ = 2π⁵k⁴/(15h³c²), R∞ = α²mₑc/2h).

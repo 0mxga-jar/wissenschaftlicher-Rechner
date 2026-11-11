@@ -53,7 +53,13 @@ export function valueRows(value: Value, form: ResultForm, view: ResultView = 'st
   switch (value.kind) {
     case 'real':
       if (view === 'dms') return { rows: [dmsRow(value)], exact: false };
-      if (view === 'fact') return { rows: [factorRow(value)], exact: true };
+      if (view === 'fact') {
+        try {
+          return { rows: [factorRow(value)], exact: true };
+        } catch {
+          /* nicht zerlegbar → normale Anzeige */
+        }
+      }
       return { rows: [realRow(value, fmt, form)], exact: isExactShown(value, form) };
     case 'complex':
       return {

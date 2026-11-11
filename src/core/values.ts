@@ -165,7 +165,7 @@ export function cSqrt(a: Scalar): Scalar {
   return simplify(new Cx(x, a.im.n < 0 ? rNeg(y) : y));
 }
 export function cPow(a: Scalar, b: Scalar): Scalar {
-  if (b.kind === 'real' && b.isInt() && Math.abs(b.n) <= 256) {
+  if (b.kind === 'real' && b.isInt() && Math.abs(b.n) <= 1e6) {
     let n = Math.abs(b.n);
     if (n === 0) {
       if (cAbs(a).isZero()) throw new CalcError('DOMAIN', '0 hoch 0 ist nicht definiert.');
@@ -262,22 +262,22 @@ function eliminate(m: Real[][], cols: number): { det: Real; rank: number } {
   let det = Real.ONE;
   let rank = 0;
   let row = 0;
+  // Größenordnung jeder Zeile (für die Beurteilung „numerisch null“ bei nicht exakten Werten)
+  const rowScale = m.map((r) => r.slice(0, cols).reduce((acc, x) => Math.max(acc, Math.abs(x.n)), 0));
   for (let col = 0; col < cols && row < n; col++) {
     let piv = -1;
     let best = 0;
     for (let i = row; i < n; i++) {
-      if (m[i][col].isZero()) continue;
-      const v = Math.abs(m[i][col].n);
+      const x = m[i][col];
+      if (x.isZero()) continue;
+      // numerisch winzige Einträge (nur bei nicht exakten Werten) als 0 behandeln
+      if (!x.ex && Math.abs(x.n) < 1e-13 * rowScale[i]) continue;
+      // relativ zur Zeilengröße vergleichen (skalierte Pivotsuche)
+      const v = rowScale[i] > 0 ? Math.abs(x.n) / rowScale[i] : Math.abs(x.n);
       if (v > best) {
         best = v;
         piv = i;
       }
-    }
-    // numerisch winzige Pivots (nur bei nicht exakten Werten) als 0 behandeln
-    if (piv >= 0 && !m[piv][col].ex) {
-      let scale = 0;
-      for (let i = 0; i < n; i++) for (let j = 0; j < cols; j++) scale = Math.max(scale, Math.abs(m[i][j].n));
-      if (best < 1e-13 * Math.max(1, scale)) piv = -1;
     }
     if (piv < 0) {
       det = Real.ZERO;
@@ -285,6 +285,7 @@ function eliminate(m: Real[][], cols: number): { det: Real; rank: number } {
     }
     if (piv !== row) {
       [m[piv], m[row]] = [m[row], m[piv]];
+      [rowScale[piv], rowScale[row]] = [rowScale[row], rowScale[piv]];
       det = rNeg(det);
     }
     const p = m[row][col];
