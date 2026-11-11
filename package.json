@@ -1,0 +1,30 @@
+{
+  "name": "rechenwerk",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Rechenwerk – wissenschaftlicher Schul-Taschenrechner als installierbare PWA",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test --trace off",
+    "icons": "node scripts/make-icons.mjs",
+    "zip": "mkdir -p release && rm -f release/rechenwerk-dist.zip && cd dist && zip -qr ../release/rechenwerk-dist.zip ."
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
+    "preact": "^11.2.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}
