@@ -84,11 +84,11 @@
   color: var(--disp-accent);
 }
 .entry {
-  flex: 0 0 auto;
+  /* darf schrumpfen (und scrollt dann), damit das Ergebnis immer vollständig sichtbar bleibt */
+  flex: 0 1 auto;
   min-height: 40px;
-  max-height: 46%;
   display: flex;
-  align-items: center;
+  align-items: safe center;
   overflow: auto;
   scrollbar-width: none;
   padding: 6px 0 4px;
@@ -1258,4 +1258,26 @@
 .help b {
   color: var(--accent);
   font-weight: 600;
+}
+
+/* niedrige Hochformat-Displays: kompaktere Schrift im Rechen-Display */
+@media (orientation: portrait) and (max-height: 640px) {
+  .entry {
+    font-size: 20px;
+    min-height: 32px;
+    padding: 3px 0 2px;
+  }
+  .result {
+    font-size: 25px;
+  }
+  .result-area {
+    min-height: 36px;
+  }
+  .calc-pane {
+    padding: 4px 12px 6px;
+  }
+  .statusline {
+    padding-top: 5px;
+    min-height: 23px;
+  }
 }

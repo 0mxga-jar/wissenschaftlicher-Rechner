@@ -238,59 +238,107 @@ function parenBalance(src: string): number {
   return d;
 }
 
-/** Zeile in die lineare Parser-Syntax übersetzen. */
-export function serialize(row: MRow): string {
-  let out = '';
+/** Zuordnung „Position im Quelltext → Cursorpfad“ (um nach Syntaxfehlern den Cursor zu setzen). */
+export interface Mark {
+  pos: number;
+  path: number[];
+}
+
+interface Emit {
+  out: string;
+  marks: Mark[];
+}
+
+function emit(row: MRow, prefix: number[], st: Emit): void {
   let depth = 0;
-  for (const n of row) {
+  row.forEach((n, i) => {
+    st.marks.push({ pos: st.out.length, path: [...prefix, i] });
     if (n.t === 'tok') {
       const s = tokenSrc(n.id);
       depth += parenBalance(s);
-      out += s;
-    } else if (n.t === 'txt') {
-      out += n.s;
-    } else {
-      const s = n.s.map(serialize);
-      switch (n.k) {
-        case 'frac':
-          out += `((${s[0]})/(${s[1]}))`;
-          break;
-        case 'mixed':
-          out += `mixed(${s[0]};${s[1]};${s[2]})`;
-          break;
-        case 'sqrt':
-          out += `sqrt(${s[0]})`;
-          break;
-        case 'root':
-          out += `nroot(${s[0]};${s[1]})`;
-          break;
-        case 'pow':
-          out += `^{${s[0]}}`;
-          break;
-        case 'abs':
-          out += `abs(${s[0]})`;
-          break;
-        case 'logb':
-          out += `logb(${s[0]};${s[1]})`;
-          break;
-        case 'int':
-          out += `integral(${s[0]};${s[1]};${s[2]})`;
-          break;
-        case 'diff':
-          out += `diff(${s[0]};${s[1]})`;
-          break;
-        case 'sum':
-          out += `sum(${s[0]};${s[1]};${s[2]})`;
-          break;
-        case 'prod':
-          out += `prod(${s[0]};${s[1]};${s[2]})`;
-          break;
-      }
+      st.out += s;
+      return;
     }
-  }
+    if (n.t === 'txt') {
+      st.out += n.s;
+      return;
+    }
+    const slot = (k: number): void => emit(n.s[k], [...prefix, i, k], st);
+    /** Funktionsschreibweise name(feld;feld;…) */
+    const call = (name: string): void => {
+      st.out += `${name}(`;
+      n.s.forEach((_, k) => {
+        if (k > 0) st.out += ';';
+        slot(k);
+      });
+      st.out += ')';
+    };
+    switch (n.k) {
+      case 'frac':
+        st.out += '((';
+        slot(0);
+        st.out += ')/(';
+        slot(1);
+        st.out += '))';
+        break;
+      case 'pow':
+        st.out += '^{';
+        slot(0);
+        st.out += '}';
+        break;
+      case 'mixed':
+        call('mixed');
+        break;
+      case 'sqrt':
+        call('sqrt');
+        break;
+      case 'root':
+        call('nroot');
+        break;
+      case 'abs':
+        call('abs');
+        break;
+      case 'logb':
+        call('logb');
+        break;
+      case 'int':
+        call('integral');
+        break;
+      case 'diff':
+        call('diff');
+        break;
+      case 'sum':
+        call('sum');
+        break;
+      case 'prod':
+        call('prod');
+        break;
+    }
+  });
+  st.marks.push({ pos: st.out.length, path: [...prefix, row.length] });
   // offene Klammern innerhalb eines Feldes schließen, damit sie nicht über das Feld hinausreichen
-  if (depth > 0) out += ')'.repeat(depth);
-  return out;
+  if (depth > 0) st.out += ')'.repeat(depth);
+}
+
+/** Zeile in die lineare Parser-Syntax übersetzen – mit Positionsmarken. */
+export function serializeMarked(row: MRow): { src: string; marks: Mark[] } {
+  const st: Emit = { out: '', marks: [] };
+  emit(row, [], st);
+  return { src: st.out, marks: st.marks };
+}
+
+/** Zeile in die lineare Parser-Syntax übersetzen. */
+export function serialize(row: MRow): string {
+  return serializeMarked(row).src;
+}
+
+/** Cursorpfad zur Quelltextposition (letzte Marke an oder vor der Position). */
+export function pathForPos(marks: Mark[], pos: number): number[] | null {
+  let best: Mark | null = null;
+  for (const m of marks) {
+    if (m.pos <= pos && (!best || m.pos >= best.pos)) best = m;
+  }
+  return best ? best.path.slice() : null;
 }
 
 /** Enthält die Zeile eine bestimmte Token-ID (auch in Feldern)? */

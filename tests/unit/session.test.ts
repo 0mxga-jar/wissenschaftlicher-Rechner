@@ -202,3 +202,42 @@ describe('Formularfelder', () => {
     expect(f.active).toBe('a');
   });
 });
+
+describe('Cursor springt nach einem Syntaxfehler an die Fehlerstelle', () => {
+  it('überzähliger Operator', () => {
+    const { s, keys, typeDigits, shown } = makeSession();
+    typeDigits('12+×34');
+    keys('exe');
+    expect(s.error?.code).toBe('SYNTAX');
+    keys('left');
+    expect(s.error).toBeNull();
+    expect(s.ed.cur).toEqual([3]); // vor dem ×
+    keys('right', 'del'); // × entfernen
+    keys('exe');
+    expect(shown()).toBe('46');
+  });
+  it('leeres Feld in einem Bruch', () => {
+    const { s, keys, typeDigits, shown } = makeSession();
+    keys('p:frac');
+    typeDigits('1');
+    keys('exe');
+    expect(s.error?.code).toBe('SYNTAX');
+    keys('left');
+    expect(s.ed.cur).toEqual([0, 1, 0]); // im leeren Nenner
+    typeDigits('4');
+    keys('exe');
+    expect(shown()).toBe('1/4');
+  });
+  it('unvollständiger Ausdruck: Cursor am Ende', () => {
+    const { s, keys, typeDigits } = makeSession();
+    typeDigits('7+');
+    keys('exe', 'left');
+    expect(s.ed.cur).toEqual([2]);
+  });
+  it('bei Rechenfehlern bleibt es bei Anfang bzw. Ende', () => {
+    const { s, keys, typeDigits } = makeSession();
+    typeDigits('1÷0');
+    keys('exe', 'right');
+    expect(s.ed.cur).toEqual([0]);
+  });
+});

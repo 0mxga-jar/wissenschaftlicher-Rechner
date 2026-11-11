@@ -49,7 +49,7 @@ Danach startet Rechenwerk wie eine normale App im Vollbild und funktioniert auch
 
 | Nr. | Modus | Inhalt |
 | --- | --- | --- |
-| 1 | **Berechnungen** | Grundrechenarten, Trigonometrie inkl. Umkehr- und Hyperbelfunktionen, log/ln/eˣ/10ˣ, n!, nPr, nCr, Zufallszahlen, Primfaktorzerlegung (FACT), ggT/kgV, Division mit Rest, Grad-Minuten-Sekunden, numerische Ableitung und Integration, Σ und Π, **CALC**, **SOLVE** (Newton-Verfahren mit Startwert), 43 physikalische Konstanten, Einheitenumrechnung |
+| 1 | **Berechnungen** | Grundrechenarten, Trigonometrie inkl. Umkehr- und Hyperbelfunktionen, log/ln/eˣ/10ˣ, n!, nPr, nCr, Zufallszahlen, Primfaktorzerlegung (FACT), ggT/kgV, Division mit Rest, Grad-Minuten-Sekunden, numerische Ableitung und Integration, Σ und Π, **CALC**, **SOLVE** (Newton-Verfahren mit Startwert), 42 physikalische Konstanten (CODATA 2018), Umrechnung zwischen 58 Einheiten in 10 Größenarten |
 | 2 | **Komplexe Zahlen** | Rechnen in a+bi und Polarform r∠θ, Betrag, Argument, konjugiert, Real-/Imaginärteil |
 | 3 | **Basis-N** | DEC/HEX/BIN/OCT (32 Bit), and/or/xor/xnor/Not/Neg, Ergebnis gleichzeitig in allen Basen |
 | 4 | **Matrizen** | MatA–MatD bis 4×4: Addition, Multiplikation, Determinante, Inverse, Transponierte, Potenzen, Einheitsmatrix, Zeilenstufenform |

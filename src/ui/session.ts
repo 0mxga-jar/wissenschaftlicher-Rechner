@@ -25,7 +25,10 @@ import {
   clear,
   isEmpty,
   setRow,
+  setCursor,
   serialize,
+  serializeMarked,
+  pathForPos,
   type EditorState,
 } from '../editor/model';
 import { CONTINUES_WITH_ANS } from '../editor/tokens';
@@ -122,6 +125,8 @@ export class CalcSession {
   form: ResultForm = 'exact';
   view: ResultView = 'std';
   error: CalcError | null = null;
+  /** Cursorposition der Fehlerstelle (bei Syntaxfehlern), sonst null. */
+  private errorPath: number[] | null = null;
 
   constructor(private opts: SessionOptions) {}
 
@@ -157,6 +162,10 @@ export class CalcSession {
     } catch (e) {
       this.error = toCalcError(e);
       this.current = null;
+      this.errorPath = null;
+      if (!this.opts.serialize && this.error.pos !== undefined) {
+        this.errorPath = pathForPos(serializeMarked(this.ed.root).marks, this.error.pos);
+      }
       return null;
     }
   }
@@ -176,10 +185,14 @@ export class CalcSession {
   }
 
   /** Zurück in den Bearbeitungszustand (Ausdruck bleibt stehen). */
-  private resume(atStart = false): void {
+  private resume(atStart = false, toError = false): void {
+    const path = toError && this.error ? this.errorPath : null;
     this.current = null;
     this.error = null;
+    this.errorPath = null;
     this.ed.cur = [atStart ? 0 : this.ed.root.length];
+    // nach einem Syntaxfehler springt der Cursor an die Fehlerstelle
+    if (path) setCursor(this.ed, path);
   }
 
   loadEntry(i: number): void {
@@ -226,7 +239,7 @@ export class CalcSession {
         return true;
       case 'left':
       case 'right':
-        if (!this.editing) this.resume(action === 'right');
+        if (!this.editing) this.resume(action === 'right', true);
         else if (action === 'left') moveLeft(this.ed);
         else moveRight(this.ed);
         return true;

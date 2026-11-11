@@ -216,7 +216,17 @@ export function SessionView({
             </button>
           ))}
       </div>
-      <div class="entry" data-testid="entry">
+      <div
+        class="entry"
+        data-testid="entry"
+        ref={(el) => {
+          // nach der Berechnung den Ausdruck wieder von Anfang an zeigen
+          if (el && !s.editing) {
+            el.scrollTop = 0;
+            el.scrollLeft = 0;
+          }
+        }}
+      >
         {isEmpty(s.ed) && s.editing && emptyHint ? <span class="entry-hint">{emptyHint}</span> : null}
         <MathView
           row={s.ed.root}
